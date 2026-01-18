@@ -1,0 +1,33 @@
+/* ===== Global grund ===== */
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #22253a;
+    color: rgb(209, 208, 208);
+    min-height: 100%;
+}
+
+/*
+  Root ska INTE ha fast height.
+  Den ska tillåta sidan att växa när innehållet växer.
+*/
+#root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* ===== Generella element ===== */
+
+* {
+    box-sizing: border-box;
+}
+
+hr {
+    border: none;
+    height: 1px;
+    background-color: #888;
+}

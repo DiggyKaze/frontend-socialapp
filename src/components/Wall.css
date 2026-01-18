@@ -1,0 +1,55 @@
+/* ===== Skapa nytt inlägg ===== */
+
+.create-post {
+    background: #0e2030;
+    border: 1px solid rgb(56 64 75);
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.center {
+    text-align: center;
+}
+
+.about-me {
+    margin-top: -20px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.create-post textarea {
+    background: #08131d;
+    color: #fff;
+    border: 1px solid rgb(56 64 75);
+    border-radius: 4px;
+    padding: 0.75rem;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.create-post textarea:focus {
+    outline: none;
+    border-color: #4c7dff;
+}
+
+/* Knappen */
+.create-post button {
+    align-self: flex-end;
+    background-color: #4c7dff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.4rem 1.1rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.create-post button:hover {
+    background-color: #3a68d8;
+}
