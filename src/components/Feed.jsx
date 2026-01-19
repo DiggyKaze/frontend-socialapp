@@ -53,6 +53,7 @@ const Feed = () => {
                 }
 
                 const data = await res.json();
+                console.log(data)
                 setPosts(data);
             } catch (error) {
                 console.error(error);
@@ -82,6 +83,7 @@ const Feed = () => {
                         <hr/>
                         <small className="post-date">
                             {new Date(post.createdAt).toLocaleString()}
+
                         </small>
                     </li>
                 ))}
