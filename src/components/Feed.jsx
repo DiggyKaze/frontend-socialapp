@@ -1,33 +1,8 @@
 import {useEffect, useState} from "react";
 import {useAuth} from "../context/useAuth";
-
 import {Link} from "react-router-dom";
 import "./Feed.css";
 import {API_BASE_URL} from "../config/api.js";
-
-/*
- * Feed
- *
- * Denna komponent representerar användarens flöde (feed) med inlägg.
- * Komponenten är tänkt att användas bakom en ProtectedRoute och
- * förutsätter därför att användaren är inloggad.
- *
- * Funktionalitet:
- * - Hämtar autentiseringsdata (token och userId) via useAuth()
- * - Hämtar inlägg från backend med hjälp av fetch
- * - Skickar med JWT-token i Authorization-headern
- * - Hanterar laddningsstatus och tomma resultat
- *
- * Flöde:
- * 1. När komponenten renderas körs useEffect
- * 2. Om token eller userId saknas avbryts hämtningen
- * 3. Om användaren är inloggad görs ett anrop till /posts
- * 4. Vid lyckat svar lagras inläggen i state
- * 5. Komponenten renderar:
- *    - laddningstext under hämtning
- *    - ett meddelande om inga inlägg finns
- *    - annars en lista med inlägg
- */
 
 const Feed = () => {
     const {token, userId} = useAuth();
@@ -53,7 +28,6 @@ const Feed = () => {
                 }
 
                 const data = await res.json();
-                console.log(data)
                 setPosts(data);
             } catch (error) {
                 console.error(error);
@@ -71,7 +45,7 @@ const Feed = () => {
 
     return (
         <div className="feed-container">
-            <Link to="/wall">Till min sida</Link>
+            <Link to={`/wall/${userId}`}>Till min sida</Link>
             <h1>Inlägg</h1>
 
             {posts.length === 0 && <p>Inga inlägg hittades</p>}
@@ -80,10 +54,17 @@ const Feed = () => {
                 {posts.map((post) => (
                     <li key={post.id} className="post-card">
                         <p className="post-text">{post.text}</p>
+
+                        <small className="post-author">
+                            av{" "}
+                            <Link to={`/wall/${post.user.id}`}>
+                                {post.user.displayName}
+                            </Link>
+                        </small>
+
                         <hr/>
                         <small className="post-date">
                             {new Date(post.createdAt).toLocaleString()}
-
                         </small>
                     </li>
                 ))}

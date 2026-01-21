@@ -5,6 +5,7 @@ import Feed from "./components/Feed.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Wall from "./components/Wall.jsx";
 import Layout from "./components/Layout.jsx";
+import RegisterForm from "./components/RegisterForm.jsx";
 
 /*
  * App
@@ -23,11 +24,12 @@ function App() {
             <Route path="/" element={<Layout/>}>
 
                 <Route path="/login" element={<LoginForm/>}/>
+                <Route path="/register" element={<RegisterForm/>}/>
 
                 {/* Skyddad sektion */}
                 <Route element={<ProtectedRoute/>}>
                     <Route path="/feed" element={<Feed/>}/>
-                    <Route path="/wall" element={<Wall/>}/>
+                    <Route path="/wall/:userId" element={<Wall/>}/>
                 </Route>
             </Route>
 

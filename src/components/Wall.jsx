@@ -1,64 +1,33 @@
 import {useEffect, useState} from "react";
+import {Link, useParams} from "react-router-dom";
 import {useAuth} from "../context/useAuth";
 import "./Feed.css";
 import "./Wall.css";
 import {API_BASE_URL} from "../config/api.js";
 
-
-/*
- * Wall
- *
- * Wall-komponenten representerar användarens personliga sida
- * ("min sida") i applikationen.
- *
- * På denna sida kan användaren:
- * - se sin profilinformation (namn och presentation)
- * - se sina egna inlägg
- * - skapa nya inlägg som kopplas till den inloggade användaren
- *
- * Komponenten är skyddad av ProtectedRoute och förutsätter
- * därför att användaren är inloggad.
- *
- * Funktionalitet:
- * - Hämtar autentiseringsdata (token och userId) via useAuth()
- * - Hämtar användarinformation och tillhörande inlägg från backend
- * - Skickar med JWT-token i Authorization-headern
- * - Skapar nya inlägg via POST /users/{userId}/posts
- * - Hämtar om listan med inlägg efter lyckat POST-anrop
- * - Hanterar laddningsstatus och tomma resultat
- *
- * Flöde:
- * 1. När komponenten renderas körs useEffect
- * 2. Ett GET-anrop görs till /users/{userId}/with-posts
- * 3. Backend svarar med både användarobjekt och en lista med inlägg
- * 4. Användardata och inlägg lagras i state
- * 5. Användaren kan skriva ett nytt inlägg i textfältet
- * 6. Klick på "Publicera" skickar ett POST-anrop med inläggets text
- * 7. Vid lyckat POST-anrop hämtas inläggen på nytt så att det nya
- *    inlägget visas direkt i listan
- *
- * Komponenten innehåller ingen routing- eller autentiseringslogik.
- * All sådan logik hanteras via routing (ProtectedRoute) och AuthProvider.
- */
-
-
 const Wall = () => {
-    const {token, userId} = useAuth();
+    const {token, userId: loggedInUserId} = useAuth();
+    const {userId: wallUserId} = useParams();
+
+    const isOwnWall = Number(wallUserId) === Number(loggedInUserId);
 
     const [posts, setPosts] = useState([]);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+
     const [newPostText, setNewPostText] = useState("");
+    const [editingPostId, setEditingPostId] = useState(null);
+    const [editedText, setEditedText] = useState("");
 
     const fetchPosts = async () => {
-        if (!token || !userId) {
+        if (!token || !wallUserId) {
             setLoading(false);
             return;
         }
 
         try {
             const res = await fetch(
-                `${API_BASE_URL}/users/${userId}/with-posts`,
+                `${API_BASE_URL}/users/${wallUserId}/with-posts`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -82,7 +51,7 @@ const Wall = () => {
 
     useEffect(() => {
         fetchPosts();
-    }, [token, userId]);
+    }, [token, wallUserId]);
 
     const handleCreatePost = async () => {
         if (!newPostText.trim()) {
@@ -91,16 +60,14 @@ const Wall = () => {
 
         try {
             const res = await fetch(
-                `${API_BASE_URL}/users/${userId}/posts`,
+                `${API_BASE_URL}/users/${loggedInUserId}/posts`,
                 {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify({
-                        text: newPostText,
-                    }),
+                    body: JSON.stringify({text: newPostText}),
                 }
             );
 
@@ -109,7 +76,71 @@ const Wall = () => {
             }
 
             setNewPostText("");
-            await fetchPosts(); // hämta om listan efter lyckat POST
+            await fetchPosts();
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleDeletePost = async (postId) => {
+        try {
+            const res = await fetch(
+                `${API_BASE_URL}/posts/${postId}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!res.ok) {
+                throw new Error("Failed to delete post");
+            }
+
+            setPosts((prev) => prev.filter((post) => post.id !== postId));
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const startEdit = (post) => {
+        setEditingPostId(post.id);
+        setEditedText(post.text);
+    };
+
+    const handleUpdatePost = async (postId) => {
+        if (!editedText.trim()) {
+            return;
+        }
+
+        try {
+            const res = await fetch(
+                `${API_BASE_URL}/posts/${postId}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({text: editedText}),
+                }
+            );
+
+            if (!res.ok) {
+                throw new Error("Failed to update post");
+            }
+
+            setPosts((prev) =>
+                prev.map((post) =>
+                    post.id === postId
+                        ? {...post, text: editedText}
+                        : post
+                )
+            );
+
+            setEditingPostId(null);
+            setEditedText("");
         } catch (error) {
             console.error(error);
         }
@@ -129,27 +160,67 @@ const Wall = () => {
                 </p>
             </div>
 
-            {/* Skapa nytt inlägg */}
-            <div className="create-post">
-                <textarea
-                    value={newPostText}
-                    onChange={(e) => setNewPostText(e.target.value)}
-                    placeholder="Skriv ett nytt inlägg..."
-                />
-                <button onClick={handleCreatePost}>
-                    Publicera
-                </button>
-            </div>
+            {isOwnWall && (
+                <div className="create-post">
+                    <textarea
+                        value={newPostText}
+                        onChange={(e) => setNewPostText(e.target.value)}
+                        placeholder="Skriv ett nytt inlägg..."
+                    />
+                    <button onClick={handleCreatePost}>
+                        Publicera
+                    </button>
+                </div>
+            )}
 
             {posts.length === 0 && <p>Inga inlägg hittades</p>}
 
             <ul className="post-list">
                 {posts.map((post) => (
                     <li key={post.id} className="post-card">
+
                         <p className="post-text">{post.text}</p>
+
+                        <small className="post-author">
+                            av{" "}
+                            <Link to={`/wall/${post.user.id}`}>
+                                {post.user.displayName}
+                            </Link>
+                        </small>
+
+                        {isOwnWall && (
+                            <>
+                                {editingPostId === post.id ? (
+                                    <>
+                                        <textarea
+                                            value={editedText}
+                                            onChange={(e) =>
+                                                setEditedText(e.target.value)
+                                            }
+                                        />
+                                        <button onClick={() => handleUpdatePost(post.id)}>
+                                            Spara
+                                        </button>
+                                        <button onClick={() => setEditingPostId(null)}>
+                                            Avbryt
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button onClick={() => startEdit(post)}>
+                                            Redigera
+                                        </button>
+                                        <button onClick={() => handleDeletePost(post.id)}>
+                                            Ta bort
+                                        </button>
+                                    </>
+                                )}
+                            </>
+                        )}
+
                         <hr/>
                         <small className="post-date">
-                            {new Date(post.createdAt).toLocaleString()} av {user.displayName}
+                            {new Date(post.createdAt).toLocaleString()}
                         </small>
                     </li>
                 ))}

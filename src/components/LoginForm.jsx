@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import {useAuth} from "../context/useAuth";
 import "./LoginForm.css";
-import {useNavigate} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 /*
  * LoginForm
  *
@@ -34,6 +34,7 @@ const LoginForm = () => {
     //tillägg
     useEffect(() => {
         if (token) {
+            console.log("Token finns: " + token);
             //navigerar till feed sidan efter inloggning
             navigate("/feed");
         }
@@ -59,6 +60,11 @@ const LoginForm = () => {
             />
             <button onClick={handleLogin}>Logga in</button>
             {token && <p>Token: {token}</p>}
+
+            <p>
+                Har du inget konto?{" "}
+                <Link to="/register">Registrera dig här</Link>
+            </p>
         </div>
     );
 };

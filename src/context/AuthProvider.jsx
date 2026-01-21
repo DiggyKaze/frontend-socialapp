@@ -37,7 +37,9 @@ export const AuthProvider = ({children}) => {
         const data = await res.json();
 
         setToken(data.token);
+        console.log(data.token);
         setUserId(data.userId);
+        console.log(data.userId);
 
         // Persistera auth-data
         localStorage.setItem("token", data.token);
