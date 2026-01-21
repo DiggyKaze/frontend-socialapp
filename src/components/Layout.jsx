@@ -53,7 +53,7 @@ const Layout = () => {
             </main>
 
             <footer className="app-footer">
-                <p>© Patric, Linus, Fadime, William 2026</p>
+                <p>© Patric, Linus, Fadime, William Spring 2026</p>
             </footer>
         </>
     );
