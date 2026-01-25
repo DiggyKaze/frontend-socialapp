@@ -6,7 +6,7 @@ import {API_BASE_URL} from "../config/api.js";
 
 const Feed = () => {
     const {token, userId} = useAuth();
-    // Spara hela pageData istället för bara en lista.
+    // Spara hela pageData istället för bara en lista. Linus
     const [pageData, setPageData] = useState([null])
     const [page, setPage] = useState([0]);
     const [loading, setLoading] = useState(true);
@@ -19,7 +19,7 @@ const Feed = () => {
             }
 
             try {
-                // Lägger till pagination-parametrar i URL:en
+                // Lägger till pagination-parametrar i URL:en. Linus
                 const res = await fetch(`${API_BASE_URL}/posts?page=${page}&size=10`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -31,7 +31,7 @@ const Feed = () => {
                 }
 
                 const data = await res.json();
-                // Data är nu ett objekt med { content: [...], totalPages: X, number: Y, etc. }
+                // Data är nu ett objekt med { content: [...], totalPages: X, number: Y, etc. } Linus
                 setPageData(data);
             } catch (error) {
                 console.error(error);
@@ -41,7 +41,7 @@ const Feed = () => {
         };
 
         fetchPosts();
-    }, [token, userId, page]); // Körs om när 'page' ändras.
+    }, [token, userId, page]); // Körs om när 'page' ändras. Linus
 
     if (loading) {
         return <p>Laddar inlägg...</p>;
@@ -52,7 +52,7 @@ const Feed = () => {
             <Link to={`/wall/${userId}`}>Till min sida</Link>
             <h1>Inlägg</h1>
 
-            {/* Kontrollera inlägg via pageData.content. */}
+            {/* Kontrollera inlägg via pageData.content. Linus */}
             {(!pageData || pageData.content.length === 0) && <p>Inga inlägg hittades</p>}
 
             <ul className="post-list">
@@ -62,7 +62,7 @@ const Feed = () => {
 
                         <small className="post-author">
                             av{" "}
-                            {/* Vi använder post.userId som är i DTO */}
+                            {/* Använder post.userId som är i DTO. Linus */}
                             <Link to={`/wall/${post.userId}`}>
                                 {post.user.displayName}
                             </Link>
@@ -76,7 +76,7 @@ const Feed = () => {
                 ))}
             </ul>
 
-            {/* Pagination UI */}
+            {/* Pagination UI. Linus */}
             {pageData && (
                 <div classname="pagination-controls"
                      style={{marginTop: "20px", display: "flex", gap: "10px", alignItems: "center"}}>
@@ -86,7 +86,7 @@ const Feed = () => {
                     >
                         Föregående
                     </button>
-                    {/* Exponera metadata */}
+                    {/* Exponera metadata. Linus */}
                     <span>Sida {pageData.number + 1} av {pageData.totalPages}</span>
 
                     <button
