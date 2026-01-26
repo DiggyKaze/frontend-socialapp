@@ -7,13 +7,13 @@ import {API_BASE_URL} from "../config/api.js";
 const Feed = () => {
     const {token, userId} = useAuth();
     // Spara hela pageData istället för bara en lista. Linus
-    const [pageData, setPageData] = useState([null])
-    const [page, setPage] = useState([0]);
+    const [pageData, setPageData] = useState(null)
+    const [page, setPage] = useState(0);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchPosts = async () => {
-            if (!token || !userId) {
+            if (!token) {
                 setLoading(false);
                 return;
             }
@@ -41,7 +41,7 @@ const Feed = () => {
         };
 
         fetchPosts();
-    }, [token, userId, page]); // Körs om när 'page' ändras. Linus
+    }, [token, page]); // Körs om när 'page' ändras. Linus
 
     if (loading) {
         return <p>Laddar inlägg...</p>;
@@ -53,7 +53,7 @@ const Feed = () => {
             <h1>Inlägg</h1>
 
             {/* Kontrollera inlägg via pageData.content. Linus */}
-            {(!pageData || pageData.content.length === 0) && <p>Inga inlägg hittades</p>}
+            {(!pageData || pageData.content?.length === 0) && <p>Inga inlägg hittades</p>}
 
             <ul className="post-list">
                 {pageData && pageData.content.map((post) => (
@@ -64,7 +64,7 @@ const Feed = () => {
                             av{" "}
                             {/* Använder post.userId som är i DTO. Linus */}
                             <Link to={`/wall/${post.userId}`}>
-                                {post.user.displayName}
+                                {post.username}
                             </Link>
                         </small>
 
@@ -78,11 +78,11 @@ const Feed = () => {
 
             {/* Pagination UI. Linus */}
             {pageData && (
-                <div classname="pagination-controls"
+                <div className="pagination-controls"
                      style={{marginTop: "20px", display: "flex", gap: "10px", alignItems: "center"}}>
                     <button
                         disabled={pageData.first}
-                        onClick={() => setPage(page - 1)}
+                        onClick={() => setPage(p => p - 1)}
                     >
                         Föregående
                     </button>
@@ -91,7 +91,7 @@ const Feed = () => {
 
                     <button
                         disabled={pageData.last}
-                        onClick={() => setPage(page + 1)}
+                        onClick={() => setPage(p => p + 1)}
                     >
                         Nästa
                     </button>
