@@ -29,7 +29,7 @@ const Wall = () => {
 
         try {
             // Hämtar användarinformation (för displayName och bio). Linus
-            const userRes = await fetch(`${API_BASE_URL}/users/${wallUserId}`, {
+            const userRes = await fetch(`${API_BASE_URL}/users/my-profile`, {
                 headers: {Authorization: `Bearer ${token}`}
             });
             const userData = await userRes.json();

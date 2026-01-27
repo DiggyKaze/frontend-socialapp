@@ -29,10 +29,10 @@ export const AuthProvider = ({children}) => {
         localStorage.setItem("token", data.token);
 
         // userId (STRING!)
-        setUserId(data.userId);
-        localStorage.setItem("userId", data.userId);
+        setUserId(data.userID);
+        localStorage.setItem("userId", data.userID);
 
-        console.log("Auth userId:", data.userId, typeof data.userId);
+        console.log("Auth userId:", data.userID, typeof data.userID);
     };
 
     const logout = () => {
