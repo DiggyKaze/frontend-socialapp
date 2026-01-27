@@ -2,20 +2,7 @@ import {useState} from "react";
 import {AuthContext} from "./AuthContext";
 import {API_BASE_URL} from "../config/api";
 
-/*
- * AuthProvider
- *
- * Wrapper-komponent som omsluter hela applikationen.
- * Ansvarar för autentiseringslogik:
- * - håller state för token och userId
- * - lagrar token och userId i localStorage
- * - återställer auth-state vid siduppdatering
- * - tillhandahåller login- och logout-funktioner
- *   via AuthContext.Provider
- */
-
 export const AuthProvider = ({children}) => {
-    // Initiera state från localStorage så auth överlever refresh
     const [token, setToken] = useState(
         localStorage.getItem("token")
     );
@@ -37,6 +24,7 @@ export const AuthProvider = ({children}) => {
 
         const data = await res.json();
 
+        // token
         setToken(data.token);
         console.log(data.token);
 
