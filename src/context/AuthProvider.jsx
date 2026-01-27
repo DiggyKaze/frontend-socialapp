@@ -6,10 +6,10 @@ export const AuthProvider = ({children}) => {
     const [token, setToken] = useState(
         localStorage.getItem("token")
     );
-    const [userId, setUserId] = useState(() => {
-        const stored = localStorage.getItem("userId");
-        return stored ? Number(stored) : null;
-    });
+
+    const [userId, setUserId] = useState(
+        localStorage.getItem("userId")
+    );
 
     const login = async (username, password) => {
         const res = await fetch(`${API_BASE_URL}/request-token`, {
@@ -26,16 +26,13 @@ export const AuthProvider = ({children}) => {
 
         // token
         setToken(data.token);
-        console.log(data.token);
-
-        setUserId(data.userId);
-        const numericUserId = Number(data.userId);
-        setUserId(numericUserId);
-        console.log(data.userId);
-
-        // Persistera auth-data
         localStorage.setItem("token", data.token);
-        localStorage.setItem("userId", String(numericUserId));
+
+        // userId (STRING!)
+        setUserId(data.userId);
+        localStorage.setItem("userId", data.userId);
+
+        console.log("Auth userId:", data.userId, typeof data.userId);
     };
 
     const logout = () => {
