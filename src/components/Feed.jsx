@@ -6,7 +6,10 @@ import {API_BASE_URL} from "../config/api.js";
 
 const Feed = () => {
     const {token, userId} = useAuth();
-    // Spara hela pageData istället för bara en lista. Linus
+    /**
+     * Spara hela pageData istället för bara en lista.
+     * Linus
+     */
     const [pageData, setPageData] = useState(null)
     const [page, setPage] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -19,7 +22,10 @@ const Feed = () => {
             }
 
             try {
-                // Lägger till pagination-parametrar i URL:en. Linus
+                /**
+                 * Lägger till pagination-parametrar i URL:en. Linus
+                 * Linus
+                 */
                 const res = await fetch(`${API_BASE_URL}/posts?page=${page}&size=10`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -31,7 +37,10 @@ const Feed = () => {
                 }
 
                 const data = await res.json();
-                // Data är nu ett objekt med { content: [...], totalPages: X, number: Y, etc. } Linus
+                /**
+                 * Data är nu ett objekt med { content: [...], totalPages: X, number: Y, etc. }
+                 * Linus
+                 */
                 setPageData(data);
             } catch (error) {
                 console.error(error);
@@ -41,7 +50,11 @@ const Feed = () => {
         };
 
         fetchPosts();
-    }, [token, page]); // Körs om när 'page' ändras. Linus
+        /**
+         * Körs om när 'page' ändras.
+         * Linus
+         */
+    }, [token, page]);
 
     if (loading) {
         return <p>Laddar inlägg...</p>;
