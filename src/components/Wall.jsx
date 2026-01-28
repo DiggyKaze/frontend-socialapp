@@ -1,6 +1,9 @@
 import {useEffect, useState} from "react";
 import {Link, useParams} from "react-router-dom";
 import {useAuth} from "../context/useAuth";
+import SendFriendRequestButton from "./SendFriendRequestButton";
+import FriendRequestList from "./FriendRequestList";
+import FriendList from "./FriendList";
 import "./Feed.css";
 import "./Wall.css";
 import {API_BASE_URL} from "../config/api.js";
@@ -8,19 +11,17 @@ import {API_BASE_URL} from "../config/api.js";
 const Wall = () => {
     const {token, userId: loggedInUserId} = useAuth();
     const {userId: wallUserId} = useParams();
-
     const isOwnWall = Number(wallUserId) === Number(loggedInUserId);
 
-    // Använder pageData och page-state för pagination. Linus
+    const [user, setUser] = useState(null);
     const [pageData, setPageData] = useState(null);
     const [page, setPage] = useState(0);
-    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-
     const [newPostText, setNewPostText] = useState("");
     const [editingPostId, setEditingPostId] = useState(null);
     const [editedText, setEditedText] = useState("");
 
+    // Hämta användare och inlägg
     const fetchWallData = async () => {
         if (!token || !wallUserId) {
             setLoading(false);
@@ -28,57 +29,54 @@ const Wall = () => {
         }
 
         try {
-            // Hämtar användarinformation (för displayName och bio). Linus
+            // Hämta wall-användare info
             const userRes = await fetch(`${API_BASE_URL}/users/my-profile`, {
-                headers: {Authorization: `Bearer ${token}`}
+                headers: {Authorization: `Bearer ${token}`},
             });
             const userData = await userRes.json();
             setUser(userData);
 
-            // Hämtar inlägg med pagination. Linus
+            /**
+             * Hämta inlägg med pagination
+             * Linus
+             */
             const postsRes = await fetch(
                 `${API_BASE_URL}/users/${wallUserId}/posts?page=${page}&size=5`,
-                {
-                    headers: {Authorization: `Bearer ${token}`},
-                }
+                {headers: {Authorization: `Bearer ${token}`}}
             );
-
             if (!postsRes.ok) throw new Error("Failed to fetch posts");
-
             const data = await postsRes.json();
-            setPageData(data); // Sparar hela Page-objektet. Linus
-        } catch (error) {
-            console.error(error);
+            setPageData(data);
+        } catch (err) {
+            console.error(err);
         } finally {
             setLoading(false);
         }
     };
 
-    // Triggar omkörning även när 'page' ändras. Linus
     useEffect(() => {
         fetchWallData();
     }, [token, wallUserId, page]);
 
+    // Skapa inlägg
     const handleCreatePost = async () => {
         if (!newPostText.trim()) return;
         try {
             const res = await fetch(`${API_BASE_URL}/users/${loggedInUserId}/posts`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
+                headers: {"Content-Type": "application/json", Authorization: `Bearer ${token}`},
                 body: JSON.stringify({text: newPostText}),
             });
             if (!res.ok) throw new Error("Failed to create post");
             setNewPostText("");
-            setPage(0); // Gå till första sidan för att se det nya inlägget. Linus
+            setPage(0);
             await fetchWallData();
-        } catch (error) {
-            console.error(error);
+        } catch (err) {
+            console.error(err);
         }
     };
 
+    // Radera inlägg
     const handleDeletePost = async (postId) => {
         try {
             const res = await fetch(`${API_BASE_URL}/posts/${postId}`, {
@@ -86,28 +84,26 @@ const Wall = () => {
                 headers: {Authorization: `Bearer ${token}`},
             });
             if (!res.ok) throw new Error("Failed to delete post");
-            await fetchWallData(); // Uppdatera listan
-        } catch (error) {
-            console.error(error);
+            await fetchWallData();
+        } catch (err) {
+            console.error(err);
         }
     };
 
+    // Uppdatera inlägg
     const handleUpdatePost = async (postId) => {
         if (!editedText.trim()) return;
         try {
             const res = await fetch(`${API_BASE_URL}/posts/${postId}`, {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
+                headers: {"Content-Type": "application/json", Authorization: `Bearer ${token}`},
                 body: JSON.stringify({text: editedText}),
             });
             if (!res.ok) throw new Error("Failed to update post");
             setEditingPostId(null);
             await fetchWallData();
-        } catch (error) {
-            console.error(error);
+        } catch (err) {
+            console.error(err);
         }
     };
 
@@ -125,25 +121,33 @@ const Wall = () => {
                 <p><b>Om mig:</b> {user.bio}</p>
             </div>
 
+            {/* Friendship-sektion */}
+            <div className="friendship-section">
+                <FriendList wallUserId={Number(wallUserId)} token={token}/>
+
+                {isOwnWall && <FriendRequestList token={token}/>}
+
+                {!isOwnWall && <SendFriendRequestButton wallUserId={Number(wallUserId)} token={token}/>}
+            </div>
+
+            {/* Skapa inlägg */}
             {isOwnWall && (
                 <div className="create-post">
-                    <textarea
-                        value={newPostText}
-                        onChange={(e) => setNewPostText(e.target.value)}
-                        placeholder="Skriv ett nytt inlägg..."
-                    />
+          <textarea
+              value={newPostText}
+              onChange={(e) => setNewPostText(e.target.value)}
+              placeholder="Skriv ett nytt inlägg..."
+          />
                     <button onClick={handleCreatePost}>Publicera</button>
                 </div>
             )}
 
+            {/* Inlägg */}
             {(!pageData || pageData.content.length === 0) && <p>Inga inlägg hittades</p>}
-
             <ul className="post-list">
                 {pageData && pageData.content.map((post) => (
                     <li key={post.id} className="post-card">
                         <p className="post-text">{post.text}</p>
-
-                        {/* Använder fälten från PostResponseDTO */}
                         <small className="post-author">
                             av <Link to={`/wall/${post.userId}`}>{post.username}</Link>
                         </small>
@@ -170,15 +174,9 @@ const Wall = () => {
                 ))}
             </ul>
 
-            {/* Pagination UI Linus */}
+            {/* Pagination Linus */}
             {pageData && (
-                <div className="pagination-controls" style={{
-                    marginTop: "20px",
-                    display: "flex",
-                    gap: "10px",
-                    alignItems: "center",
-                    justifyContent: "center"
-                }}>
+                <div className="pagination-controls">
                     <button disabled={pageData.first} onClick={() => setPage(page - 1)}>Föregående</button>
                     <span>Sida {pageData.number + 1} av {pageData.totalPages}</span>
                     <button disabled={pageData.last} onClick={() => setPage(page + 1)}>Nästa</button>
